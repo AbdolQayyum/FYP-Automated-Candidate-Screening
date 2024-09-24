@@ -12,7 +12,7 @@ connect();
 
 export async function POST(request) {
     try {
-        const reqBody = await request.json(); //mits like middle which can returns all values
+        const reqBody = await request.json(); //like middle which can returns all values
 
         //extracting token
         const {token} = reqBody;

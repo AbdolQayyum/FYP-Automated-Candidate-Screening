@@ -15,8 +15,9 @@ export default function Home() {
             There Are <span style={{ color: 'blue' }}>500</span> Posting Here For You!
           </h1>
           <p className="text-sm mb-4">
-            "Empower yourself with the tools and resources you need to land your dream job. Our platform connects talented individuals with leading employers, making it easier than ever to find the perfect job match. Take control of your career and start exploring our job listings today!"
-          </p>
+  Empower yourself with the tools and resources you need to land your dream job. Our platform connects talented individuals with leading employers, making it easier than ever to find the perfect job match. Take control of your career and start exploring our job listings today!
+</p>
+
           <div className="flex items-center mt-2 mb-2 mr-3">
             <Input
               type="search"
