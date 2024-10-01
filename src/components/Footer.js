@@ -1,6 +1,5 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWhatsapp, faGoogle, faInstagram, faGlobe } from '@fortawesome/free-brands-svg-icons'; // Importing brand icons
+import { PhoneIcon, GlobeAltIcon, EnvelopeIcon, UserCircleIcon } from '@heroicons/react/24/solid'; // Updated for Heroicons v2
 
 const Footer = () => {
     return (
@@ -55,7 +54,7 @@ const Footer = () => {
                             placeholder="Enter your email"
                             className="w-full p-1 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-green-700"
                         />
-                        <button type="submit" className="bg-green-700 text-white px-2 rounded-r-md hover:bg-green-800 transition-colors duration-300">
+                        <button type="submit" className="bg-blue-700 text-white px-2 rounded-r-md hover:bg-green-800 transition-colors duration-300">
                             Send
                         </button>
                     </form>
@@ -72,10 +71,18 @@ const Footer = () => {
 
                 {/* Social Media Icons */}
                 <div className="flex space-x-2">
-                    <a href="#" className="text-gray-600 hover:text-green-700"><FontAwesomeIcon icon={faWhatsapp} size="lg" /></a>
-                    <a href="#" className="text-gray-600 hover:text-green-700"><FontAwesomeIcon icon={faGlobe} size="lg" /></a>
-                    <a href="#" className="text-gray-600 hover:text-green-700"><FontAwesomeIcon icon={faGoogle} size="lg" /></a>
-                    <a href="#" className="text-gray-600 hover:text-green-700"><FontAwesomeIcon icon={faInstagram} size="lg" /></a>
+                    <a href="#" className="text-gray-400 hover:text-blue-700">
+                        <PhoneIcon className="h-6 w-6" />
+                    </a>
+                    <a href="#" className="text-gray-400 hover:text-blue-700">
+                        <GlobeAltIcon className="h-6 w-6" />
+                    </a>
+                    <a href="#" className="text-gray-400 hover:text-blue-700">
+                        <EnvelopeIcon className="h-6 w-6" />
+                    </a>
+                    <a href="#" className="text-gray-400 hover:text-blue-700">
+                        <UserCircleIcon className="h-6 w-6" />
+                    </a>
                 </div>
             </div>
 

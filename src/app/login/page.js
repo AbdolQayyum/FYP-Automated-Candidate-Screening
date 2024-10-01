@@ -47,8 +47,8 @@ export default function Login() {
         <div className="bg-[#f5f5f5] text-[#1b1b1b] flex items-center justify-center flex-col">
           <div className="my-4">
             <h1 className="font-bold text-2xl">WELCOME!</h1>
-            <h2 className="font-semibold text-xl text-black mt-1 flex items-center justify-center">
-              {loading ? "Processing" : "Login"}
+            <h2 className="font-semibold text-xl text-black mt-1 flex items-center justify-center text-center">
+              {loading ? "Processing" : " Candidates-Login"}
             </h2>
           </div>
 

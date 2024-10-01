@@ -2,6 +2,7 @@ import "./globals.css";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Montserrat } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
       <body className={montserrat.className}> {/* Apply font style */}
         <Navbar />
         {children}
+        <Toaster />
         <Footer />
       </body>
     </html>

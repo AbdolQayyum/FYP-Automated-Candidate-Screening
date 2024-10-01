@@ -1,14 +1,13 @@
-'use client'
+'use client';
 import Link from 'next/link'
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'; 
 import React from 'react'
 import Image from 'next/image'
 import { Button } from './ui/button'
 import axios from 'axios';
 
-
 export default function Navbar() {
-    const router = useRouter();
+    const router = useRouter(); 
 
     function NavItem({ path, label }) {
         const isActive = router.pathname === path;
@@ -21,23 +20,22 @@ export default function Navbar() {
             {isActive && <div className="line"></div>}
           </li>
         );
-      }
+    }
 
-    //   const logout = async() =>{
+    
+    const handleLoginRegister = () => {
+        router.push('/login'); 
+    };
+
+    // Logout function (if needed)
+    // const logout = async () => {
     //     try {
-    //         await axios.get('/api/users/logout')
-    //         toast.success("logout Success")
-    //         router.push('/login')
-            
+    //         await axios.get('/api/users/logout');
+    //         router.push('/login'); // Redirect to login page after logout
     //     } catch (error) {
-    //         console.log(error.message)
-
-            
+    //         console.error(error.message);
     //     }
-        
-    //   }
-
-     
+    // };
 
     return (
         <header className="fixed top-0 left-0 w-full z-10 flex flex-col md:flex-row items-center justify-between px-4 md:px-20 py-4 font-medium bg-white">
@@ -55,15 +53,22 @@ export default function Navbar() {
                 <ul className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6">
                     <NavItem path="/home" label="Home" />
                     <NavItem path="/browsejobs" label="Browse Jobs" />
-                    <NavItem path="/companies" label="Companies" />
                     <NavItem path="/aboutus" label="About Us" />
                     <NavItem path="/contact" label="Contact Us" />
                 </ul>
             </nav>
-            <Button type='submit' className="w-full md:w-auto bg-[#1b1b1b] rounded-xl border border-black hover:bg-[#9c9c9c] hover:text-[#1b1b1b]">
+            <Button
+                type="button" 
+                className="w-full md:w-auto bg-[#1b1b1b] rounded-xl border border-black hover:bg-[#9c9c9c] hover:text-[#1b1b1b]"
+                onClick={handleLoginRegister} // Add the click handler for login/register
+            >
                 Login/Register
             </Button>
-            <Button type='submit'  className="w-full md:w-auto bg-[#1b1b1b] rounded-xl border border-black hover:bg-[#9c9c9c] hover:text-[#1b1b1b]">
+            <Button
+                type="button"
+                className="w-full md:w-auto bg-[#1b1b1b] rounded-xl border border-black hover:bg-[#9c9c9c] hover:text-[#1b1b1b]"
+                // onClick={logout} 
+            >
                 Logout
             </Button>
         </header>

@@ -1,11 +1,11 @@
-"use client"
+"use client";
 import React, { useState } from 'react';
 
 export default function AboutUs() {
   // State to track which accordion item is open
   const [openSection, setOpenSection] = useState(null);
 
-  // Function to toggle the accordion sections
+  // Function to toggle the accordion sections (for other sections)
   const toggleSection = (section) => {
     if (openSection === section) {
       setOpenSection(null); // Close if already open
@@ -15,7 +15,7 @@ export default function AboutUs() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-center w-full min-h-screen bg-[#FFFFFF]">
+    <main className="flex flex-col items-center justify-center w-full min-h-screen bg-[#E9ECEF] mt-5 py-5">
       {/* Section: Left side with large text */}
       <section className="container flex flex-col md:flex-row mx-auto py-10">
         <div className="md:w-1/2 flex items-center justify-center p-8">
@@ -26,19 +26,17 @@ export default function AboutUs() {
 
         {/* Section: Right side with accordions */}
         <div className="md:w-1/2 flex flex-col justify-start p-8">
-          {/* Accordion Item: Who we are? */}
-          <div className="border-t border-b py-4 cursor-pointer" onClick={() => toggleSection('whoWeAre')}>
+          {/* Accordion Item: Who we are? - Always open */}
+          <div className="border-t border-b py-4">
             <div className="flex justify-between items-center">
               <h2 className="font-semibold text-xl">Who we are?</h2>
-              <span className="text-green-600 text-2xl">
-                {openSection === 'whoWeAre' ? '⌃' : '⌄'}
-              </span> {/* Arrow icon */}
+              {/* Remove the toggle functionality and keep it open */}
+              <span className="text-green-600 text-2xl">⌃</span> {/* Static arrow icon */}
             </div>
-            {openSection === 'whoWeAre' && (
-              <p className="mt-2 text-gray-600">
-                Our founders Dustin Moskovitz and Justin lorem Rosenstein met while leading Engineering teams at Facebook. Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              </p>
-            )}
+            {/* Keep the section content always visible */}
+            <p className="mt-2 text-gray-600">
+              Our founders Dustin Moskovitz and Justin lorem Rosenstein met while leading Engineering teams at Facebook. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            </p>
           </div>
 
           {/* Accordion Item: What's our goal? */}

@@ -6,13 +6,13 @@ import { FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
 
 export default function ContactUs() {
   return (
-    <main className="flex flex-col items-center justify-center w-full min-h-screen bg-[#E9ECEF] p-4">
+    <main className="flex flex-col items-center justify-center w-full min-h-screen bg-[#E9ECEF] p-4 mt-10">
       {/* Contact Info */}
       <section className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-20 my-10">
         <div className="flex flex-col items-center">
           <FaPhoneAlt className="text-2xl mb-2" />
           <p className="font-bold">Call us at</p>
-          <p className="text-gray-600">+92 301 111 4000</p>
+          <p className="text-gray-600">+92 317 4119229</p>
         </div>
         <div className="flex flex-col items-center">
           <FaEnvelope className="text-2xl mb-2" />
