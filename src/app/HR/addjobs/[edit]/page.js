@@ -26,7 +26,10 @@ export default function UpdateJob() {
 
   // Fetch job details when the component loads
   useEffect(() => {
-    if (!jobId) return;
+    if (!jobId){
+      return;
+
+    } 
 
     const fetchJobDetails = async () => {
       try {
@@ -82,11 +85,12 @@ export default function UpdateJob() {
     };
 
     try {
-      const response = await fetch(`/api/hr/jobs?id=${jobId}`, {
+      const response = await fetch(`/api/hr/jobs/${jobId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jobToUpdate),
       });
+      
 
       const result = await response.json();
 

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -83,7 +83,7 @@ export default function Addjobs() {
         <div className="flex justify-center items-center mb-6">
           <Button
             type="button"
-            className="bg-black text-white rounded-xl px-8 py-4 hover:bg-gray-600 transition duration-300"
+            className="bg-[#000080] text-white rounded-xl px-8 py-4 hover:bg-[#F5D547] hover:text-[#000080] transition duration-300"
             onClick={handlePostJobClick}
           >
             Post Job
@@ -114,14 +114,14 @@ export default function Addjobs() {
 
                   <div className="flex space-x-4 mt-4">
                     <Button 
-                      className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
+                      className="bg-[#F5D547] text-[#000080] px-4 py-2 rounded-lg hover:bg-[#000080] hover:text-[#F5D547] transition duration-300"
                       onClick={() => handleEdit(job._id)}
                     >
                       <FaEdit className="inline-block mr-2" /> Edit
                     </Button>
                     
                     <Button 
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                      className="bg-[#F5D547] text-[#000080] px-4 py-2 rounded-lg hover:bg-[#000080] hover:text-[#F5D547] transition duration-300"
                       onClick={() => handleDelete(job._id)}
                     >
                       <FaTrash className="inline-block mr-2" /> Delete
@@ -133,7 +133,7 @@ export default function Addjobs() {
           )}
           <div className="flex justify-center mt-6">
             <Button 
-              className={`mx-2 ${currentPage === 1 ? 'bg-gray-300' : 'bg-blue-500'} text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition duration-300`}
+              className={`mx-2 ${currentPage === 1 ? 'bg-gray-300' : 'bg-[#000080]'} text-white rounded-lg px-4 py-2 hover:bg-[#F5D547] transition duration-300`}
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
             >
@@ -141,16 +141,13 @@ export default function Addjobs() {
             </Button>
             <span className="self-center">Page {currentPage} of {totalPages}</span>
             <Button 
-              className={`mx-2 ${currentPage === totalPages ? 'bg-gray-300' : 'bg-blue-500'} text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition duration-300`}
+              className={`mx-2 ${currentPage === totalPages ? 'bg-gray-300' : 'bg-[#000080]'} text-white rounded-lg px-4 py-2 hover:bg-[#F5D547] transition duration-300`}
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next
             </Button>
           </div>
-          {/* <Button className="mt-4 bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition duration-300">
-            View More
-          </Button> */}
         </div>
       </section>
     </main>

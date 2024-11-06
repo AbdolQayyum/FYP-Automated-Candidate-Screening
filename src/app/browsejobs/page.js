@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { FaMapMarkerAlt, FaMoneyBillWave, FaClock } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FaMapMarkerAlt, FaMoneyBillWave, FaClock } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion"; // Added for animations
 
 export default function Browsejobs() {
   const [jobs, setJobs] = useState([]); // State that Stores fetched jobs
@@ -13,47 +14,64 @@ export default function Browsejobs() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch('/api/hr/jobs'); 
+        const response = await fetch('/api/hr/jobs');
         const data = await response.json();
         if (data.success) {
-          setJobs(data.data); // Store jobs in state
+          setJobs(data.data);
         } else {
           console.error('Failed to fetch jobs');
         }
       } catch (error) {
         console.error('Error fetching jobs:', error);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
-    fetchJobs(); 
+    fetchJobs();
   }, []);
+
+  const handlePush = (id) => {
+    console.log("Id: " + id)
+    router.push(`/applyjobs/${id}`);
+  };
 
   return (
     <main className="flex flex-col items-center justify-center w-full min-h-screen bg-[#E9ECEF]">
       {/* Job Search Section */}
-      <section
-        className="container flex flex-col items-center mx-auto mt-16 mb-16 px-4 py-24 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: 'url(/assets/profile2.jpg)', minHeight: '400px' }} // Background image for the header section
+      <motion.section
+        className="container flex flex-col items-center mx-auto mt-16 mb-16 px-8 py-36 bg-[#162F65]"
+        //  bg-cover bg-center bg-no-repeat
+        // style={{ backgroundImage: 'url(/assets/browse3.jpeg)', minHeight: '400px' }} // Background image for the header section
+        // initial={{ opacity: 0, y: -50 }}
+        // whileInView={{ opacity: 1, y: 0 }}
+        // transition={{ duration: 0.8 }}
       >
-        <h1 className="font-bold text-4xl md:text-5xl mb-10 text-white">Find Jobs</h1>
+        <h1 className="font-bold text-4xl md:text-5xl mb-10 text-[#E9ECEF]">Find Jobs</h1>
         <div className="flex items-center w-full md:w-2/3 lg:w-1/2 mt-6 mb-16">
           <Input
             type="search"
             id="search"
             placeholder="Job Title | Keyword | Company"
-            className="w-full rounded-xl border bg-white text-lg px-6 py-4 mr-2"
+            className="w-full rounded-xl border bg-[#E9ECEF] text-lg px-6 py-4 mr-2"
           />
-          <Button type="submit" className="bg-[#1b1b1b] text-lg px-6 py-4 rounded-xl hover:bg-[#9c9c9c] hover:text-[#1b1b1b]">
+          <Button
+            type="submit"
+            className="bg-[#E8AF30] text-[#162F65] text-lg px-6 py-4 rounded-xl hover:bg-[#9c9c9c] hover:text-[#162F65]"
+          >
             Search
           </Button>
         </div>
-      </section>
+      </motion.section>
 
       {/* Available Jobs Section */}
-      <section className="container flex flex-col items-center mx-auto mb-10 px-4">
-        <h2 className="font-bold text-2xl md:text-3xl mb-6 text-[#1b1b1b]">Available Jobs</h2>
+      <motion.section
+        className="container flex flex-col items-center mx-auto mb-10 px-4"
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.7 }}
+      >
+        <h2 className="font-bold text-2xl md:text-3xl mb-6 text-[#162F65]">Available Jobs</h2>
         <div className="container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-4 px-2">
           {/* Job Cards */}
           {loading ? (
@@ -62,49 +80,49 @@ export default function Browsejobs() {
             <p>No jobs found.</p>
           ) : (
             jobs.map((job) => (
-              <div
+              <motion.div
                 key={job._id}
                 className="flex flex-col bg-white p-6 rounded-lg shadow-md border border-gray-200 transition-transform duration-300 hover:scale-105"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
-                <h3 className="font-bold text-lg text-[#237195]">{job.title}</h3>
+                <h3 className="font-bold text-lg text-[#162F65]">{job.title}</h3>
                 <div className="mt-4">
-                 
                   <div className="flex items-center mb-2">
-                    <FaMapMarkerAlt className="text-[#278e27] mr-2" />
-                    <span className="font-bold text-[#9daf2a]">Location:</span> <span>{job.location}</span>
+                    <FaMapMarkerAlt className="text-[#E8AF30] mr-2" />
+                    <span className="font-bold text-[#162F65]">Location:</span> <span>{job.location}</span>
                   </div>
                   <div className="flex items-center mb-2">
-                    <FaMoneyBillWave className="text-[#278e27] mr-2" />
-                    <span className="font-bold text-[#9daf2a]">Salary:</span> <span>{job.salaryRange.min}K - {job.salaryRange.max}K</span>
+                    <FaMoneyBillWave className="text-[#E8AF30] mr-2" />
+                    <span className="font-bold text-[#162F65]">Salary:</span> <span>{job.salaryRange.min}K - {job.salaryRange.max}K</span>
                   </div>
                   <div className="flex items-center mb-2">
-                    <FaClock className="text-[#278e27] mr-2" />
-                    <span className="font-bold text-[#9daf2a]">Date:</span> <span>{new Date(job.postedAt).toLocaleString()}</span>
+                    <FaClock className="text-[#E8AF30] mr-2" />
+                    <span className="font-bold text-[#162F65]">Date:</span> <span>{new Date(job.postedAt).toLocaleString()}</span>
                   </div>
                   <div className="flex items-center mb-2">
-                    <span className="font-bold text-[#9daf2a]">Job Type:</span> <span>{job.type}</span>
+                    <span className="font-bold text-[#162F65]">Job Type:</span> <span>{job.type}</span>
                   </div>
                 </div>
 
-                
-                <Button 
-                  className="bg-[#1b1b1b] rounded-xl border border-black hover:bg-[#9c9c9c] hover:text-[#1b1b1b] px-8 py-2 mt-4 transition-all"
-                  onClick={() => router.push(`/applyjobs?id=${job._id}`)} // Navigate to ApplyJobs page
+                <Button
+                  className="bg-[#E8AF30] rounded-xl hover:bg-[#9c9c9c] text-[#162F65] px-8 py-2 mt-4 transition-all"
+                  onClick={() => handlePush(job._id)} // Updated to use dynamic route
                 >
                   Apply
                 </Button>
-              </div>
+              </motion.div>
             ))
           )}
         </div>
 
-        
         <div className="flex justify-center mt-8">
-          <Button className="bg-[#1b1b1b] rounded-xl border border-black hover:bg-[#9c9c9c] hover:text-[#1b1b1b] font-bold px-8 py-4 transition-transform duration-300 ease-in-out transform hover:scale-105">
+          <Button className="bg-[#E8AF30] rounded-xl border border-[#E8AF30] hover:bg-[#9c9c9c] hover:text-[#162F65] font-bold px-8 py-4 transition-transform duration-300 ease-in-out transform hover:scale-105">
             Load More...
           </Button>
         </div>
-      </section>
+      </motion.section>
     </main>
   );
 }

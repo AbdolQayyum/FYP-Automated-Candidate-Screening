@@ -19,14 +19,18 @@ async function findJobById(id) {
   return { success: true, job };
 }
 
+
 // Update (PUT) job handler
-export async function PUT(request, { params }) {
+export async function PUT(request, { params })  {
   try {
     const { id } = params;
 
     // Common function for validation and database connection
     const result = await findJobById(id);
-    if (!result.success) return NextResponse.json(result, { status: result.status });
+    if (!result.success){
+      return NextResponse.json(result, { status: result.status });
+
+    } 
 
     let body;
     try {
