@@ -1,5 +1,5 @@
-'use client'
-import { useState, useEffect } from 'react';
+'use client';
+import { useState, useEffect, useRef } from 'react';
 import MessageBubble from '@/components/MessageBubble';
 
 const InterviewBot = () => {
@@ -16,129 +16,182 @@ const InterviewBot = () => {
   });
   const [userInfoComplete, setUserInfoComplete] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [questionCount, setQuestionCount] = useState(0);
 
-  const steps = [
+  const chatContainerRef = useRef(null);
+
+  const userInfoQuestions = [
     { key: 'user_name', question: 'What is your name?' },
     { key: 'field', question: 'What’s your field of specialization?' },
     { key: 'experience', question: 'Are you a fresher or experienced professional?' },
     { key: 'years_of_experience', question: 'How many years of experience do you have?', condition: 'experienced' },
   ];
 
-  // Trigger the next question when stepIndex changes
-  useEffect(() => {
-    if (stepIndex < steps.length && !userInfoComplete) {
-      const currentStep = steps[stepIndex];
-      
-      setMessages((prevMessages) => {
-        const lastMessage = prevMessages[prevMessages.length - 1];
-        if (lastMessage.role === 'AI' && lastMessage.content === currentStep.question) {
-          return prevMessages; // Avoid repeating the question
-        }
-        return [...prevMessages, { role: 'AI', content: currentStep.question }];
+  const startInterview = async (userInfo) => {
+    const response = await fetch('/api/chatbot/interviewbot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: "start",
+        userInfo: userInfo
+      }),
+    });
+    const data = await response.json();
+    if (data.question) {
+      setMessages((prev) => [...prev, { role: 'AI', content: data.question }]);
+      setQuestionCount(1);
+    }
+  };
+
+  const getNextQuestion = async (userResponse) => {
+    if (questionCount >= 20) {
+      await getFeedback();
+      return;
+    }
+
+    const response = await fetch('/api/chatbot/interviewbot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: "next_question",
+        userResponse: userResponse
+      }),
+    });
+    const data = await response.json();
+
+    if (data.complete) {
+      await getFeedback();
+    } else if (data.question) {
+      setMessages((prev) => [...prev, { role: 'AI', content: data.question }]);
+      setQuestionCount((prevCount) => prevCount + 1);
+    }
+  };
+
+  const getFeedback = async () => {
+    try {
+      const response = await fetch('/api/chatbot/interviewbot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: "get_feedback"
+        }),
       });
-    }
-  }, [stepIndex, userInfoComplete]);
-
-  // Send userInfo to the backend and retrieve questions once all information is collected
-  useEffect(() => {
-    if (userInfoComplete) {
-      const sendDataToBackend = async () => {
-        try {
-          const response = await fetch('/api/chatbot/interviewbot', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userInfo),
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error from FastAPI:", errorData.detail);
+        setMessages((prev) => [...prev, { role: 'AI', content: "An error occurred while generating feedback." }]);
+        return;
+      }
+  
+      const data = await response.json();
+      if (data.feedback) {
+        const feedbackMessages = [
+          { role: 'AI', content: `You answered ${data.feedback.correct_count} out of ${data.feedback.total_questions} correctly.` },
+          { role: 'AI', content: data.feedback.final_feedback },
+        ];
+        
+        data.feedback.details.forEach((detail, index) => {
+          feedbackMessages.push({
+            role: 'AI',
+            content: `Q${index + 1}: ${detail.question}\nYour Answer: ${detail.user_answer} - ${detail.is_correct ? 'Correct' : 'Incorrect'}\nCorrect Answer: ${detail.correct_answer}`
           });
+        });
 
-          if (!response.ok) {
-            throw new Error('Failed to send data to the backend');
-          }
-
-          const data = await response.json();
-          if (data.message) {
-            setMessages((prev) => [...prev, { role: 'AI', content: data.message }]);
-          }
-
-          // Display questions from FastAPI's conversation response
-          if (data.conversation && Array.isArray(data.conversation)) {
-            const botMessages = data.conversation.map((msg) => ({
-              role: msg.role,
-              content: msg.content,
-            }));
-            setMessages((prev) => [...prev, ...botMessages]);
-          }
-        } catch (error) {
-          console.error("Error fetching data from backend:", error);
-          setMessages((prev) => [...prev, { role: 'AI', content: 'An error occurred. Please try again later.' }]);
-        }
-      };
-
-      sendDataToBackend();
+        setMessages((prev) => [...prev, ...feedbackMessages]);
+      }
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      setMessages((prev) => [...prev, { role: 'AI', content: "Unable to retrieve feedback at this time." }]);
     }
-  }, [userInfoComplete, userInfo]);
+  };
 
   const handleSendMessage = () => {
     if (input.trim()) {
       setMessages((prev) => [...prev, { role: 'User', content: input }]);
-      const currentStep = steps[stepIndex];
-      const { key } = currentStep;
 
-      setUserInfo((prev) => {
-        const updatedUserInfo = { ...prev, [key]: input };
-        return updatedUserInfo;
-      });
+      if (!userInfoComplete) {
+        const currentQuestion = userInfoQuestions[stepIndex];
+        const updatedUserInfo = { ...userInfo, [currentQuestion.key]: input };
 
-      // Determine next step
-      if (key === 'experience') {
-        if (input.toLowerCase() === 'fresher') {
-          setStepIndex(stepIndex + 2); // Skip years_of_experience step if fresher
-          setUserInfo((prev) => ({ ...prev, years_of_experience: '' }));
+        setUserInfo(updatedUserInfo);
+
+        let newIndex = stepIndex + 1;
+        while (userInfoQuestions[newIndex] && userInfoQuestions[newIndex].condition && updatedUserInfo.experience !== userInfoQuestions[newIndex].condition) {
+          newIndex += 1;
+        }
+
+        if (newIndex < userInfoQuestions.length) {
+          setStepIndex(newIndex);
+          setMessages((prev) => [...prev, { role: 'AI', content: userInfoQuestions[newIndex].question }]);
         } else {
-          setStepIndex((prev) => prev + 1);
+          setUserInfoComplete(true);
+          startInterview(updatedUserInfo);
         }
       } else {
-        setStepIndex((prev) => prev + 1);
+        getNextQuestion(input);
       }
 
-      // Mark user info collection complete if we've reached the end of steps
-      if (stepIndex + 1 >= steps.length || (key === 'experience' && input.toLowerCase() === 'fresher')) {
-        setUserInfoComplete(true);
-      }
-
-      setInput(''); // Clear input field
+      setInput('');
     }
   };
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (!userInfoComplete && stepIndex < userInfoQuestions.length) {
+      const currentQuestion = userInfoQuestions[stepIndex].question;
+      if (messages[messages.length - 1]?.content !== currentQuestion) {
+        setMessages((prev) => [...prev, { role: 'AI', content: currentQuestion }]);
+      }
+    }
+  }, [stepIndex, userInfoComplete]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#EFF0F2]">
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-center text-[#162F65] mb-6 mt-6">
-        Interviewer Bot
-      </h1>
-      
-      {/* Chat Box */}
-      <div className="w-full max-w-xl mx-auto bg-white rounded-lg shadow-lg p-6">
-        <div className="flex flex-col space-y-4 mb-4 h-80 overflow-y-auto">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 mt-6">
+      <div className="w-full max-w-3xl bg-[#162F65] shadow-lg rounded-lg p-6 space-y-4">
+        {/* Heading */}
+        <h1 className="text-3xl font-bold text-center text-[#E8AF30] mb-4">Interviewer Bot</h1>
+        
+        {/* Chat Container */}
+        <div
+          className="flex flex-col space-y-3 h-[300px] overflow-y-auto p-3 bg-blue-50 rounded-lg"
+          ref={chatContainerRef}
+        >
           {messages.map((msg, index) => (
-            <MessageBubble key={index} role={msg.role} content={msg.content} />
+            <MessageBubble
+              key={index}
+              role={msg.role}
+              content={msg.content}
+              isWelcomeMessage={index < 2} 
+            />
           ))}
         </div>
-        <div className="flex">
+
+        {/* Input Field and Send Button */}
+        <div className="flex items-center justify-center">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             placeholder="Type your answer..."
-            className="flex-grow p-2 border rounded-l-lg border-gray-300 focus:outline-none"
+            className="flex-grow p-3 border border-gray-300 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={handleSendMessage}
-            className="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 focus:outline-none"
+            className="ml-2 bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 focus:outline-none text-lg"
           >
-            Send
+            💬
           </button>
         </div>
       </div>
