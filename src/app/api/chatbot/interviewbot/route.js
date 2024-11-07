@@ -1,39 +1,58 @@
 // src/app/api/chatbot/interviewbot/route.js
-export async function POST(request) {
-    console.log("Received POST request at /api/chatbot/interviewbot"); // Initial log to confirm route hit
 
+export async function POST(req) {
     try {
-        // Parse the request body
-        const body = await request.json();
-        console.log("Parsed request body:", body); // Log the parsed request body
-        
-        // Log the URL being called in the FastAPI backend
-        const apiUrl = `${process.env.PYTHON_API_URL}/start`;
-        console.log("Calling FastAPI backend at:", apiUrl);
-
-        // Make the request to the FastAPI backend
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
+      const userInfo = await req.json();
+  
+      // Validate received data
+      if (!userInfo.user_name || !userInfo.field || !userInfo.experience) {
+        return new Response(JSON.stringify({ message: 'Incomplete user information' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
         });
-
-        console.log("Received response from FastAPI with status:", response.status);
-
-        // Parse the JSON data from FastAPI's response
-        const data = await response.json();
-        console.log("Data received from FastAPI:", data); // Log the actual response data
-
-        // Return the response back to the frontend
-        return new Response(JSON.stringify(data), {
-            status: response.status,
-            headers: { 'Content-Type': 'application/json' },
+      }
+  
+      // Log the received data for debugging
+      console.log("Received user information in Next.js:", JSON.stringify(userInfo, null, 2));
+  
+      // Check if PYTHON_API_URL is set in environment variables
+      if (!process.env.PYTHON_API_URL) {
+        console.error("PYTHON_API_URL is not set in environment variables.");
+        return new Response(JSON.stringify({ message: 'Internal Server Configuration Error' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
         });
+      }
+  
+      // Send the data to FastAPI
+      const fastApiResponse = await fetch(`${process.env.PYTHON_API_URL}/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userInfo),
+      });
+  
+      if (!fastApiResponse.ok) {
+        const errorResponse = await fastApiResponse.json();
+        console.error("Error from FastAPI:", errorResponse);
+        throw new Error(`FastAPI Error: ${errorResponse.detail || fastApiResponse.statusText}`);
+      }
+  
+      const fastApiData = await fastApiResponse.json();
+      console.log("Response from FastAPI:", fastApiData);
+  
+      // Respond back to the frontend with the FastAPI response
+      return new Response(JSON.stringify({ message: fastApiData.message, conversation: fastApiData.conversation }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     } catch (error) {
-        console.error("Error in Next.js API route /api/chatbot/interviewbot:", error); // Log errors in catch block
-        return new Response(JSON.stringify({ error: 'Error communicating with the chatbot API.' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
+      console.error("Error processing request in Next.js API route:", error);
+      return new Response(JSON.stringify({ message: 'Internal Server Error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
-}
+  }
+  

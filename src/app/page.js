@@ -17,6 +17,10 @@ export default function Home() {
     router.push('/HR/hrlogin'); // Ensure this path matches the HRLogin page route
   };
 
+  const handleHRMain = () => {
+    router.push('/HR/hrMain'); // Ensure this path matches the HRLogin page route
+  };
+
   return (
     <main className="flex flex-col items-center justify-center h-screen bg-[#E9ECEF] p-4 mt-8">
       {/* Header Section */}
@@ -45,7 +49,7 @@ export default function Home() {
         {/* Login as HR Button */}
         <Button
           className="bg-[#000080] text-white px-5 py-3 rounded-xl border hover:bg-[#5a8bce] transition-colors duration-300" // Navy blue with white text, lighter blue on hover
-          onClick={handleHRLogin}
+          onClick={handleHRMain}
         >
           Login as HR
         </Button>
