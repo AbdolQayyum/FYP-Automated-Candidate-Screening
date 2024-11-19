@@ -1,8 +1,9 @@
+// app/layout.js
 import "./globals.css";
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Montserrat } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
+import LayoutWrapper from '@/components/LayoutWrapper'; 
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -17,9 +18,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={montserrat.className}> {/* Apply font style */}
-        <Navbar />
-        {children}
+      <body className={montserrat.className}>
+        <LayoutWrapper>{children}</LayoutWrapper>
         <Toaster />
         <Footer />
       </body>

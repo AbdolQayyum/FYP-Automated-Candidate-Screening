@@ -25,6 +25,10 @@ export default function Navbar() {
         router.push('/login'); 
     };
 
+    const handleLogout = () => {
+        router.push('/'); 
+    };
+
     return (
         <header className="fixed top-0 left-0 w-full z-10 flex flex-col md:flex-row items-center justify-between px-4 md:px-20 py-4 font-medium bg-[#162F65] text-[#EFF0F2]">
             <div className="flex items-center mb-4 md:mb-0">
@@ -56,7 +60,7 @@ export default function Navbar() {
                 <Button
                     type="button"
                     className="w-full md:w-auto bg-[#E8AF30] text-[#162F65] rounded-xl border border-[#162F65] hover:bg-[#EFF0F2] hover:text-[#1b1b1b]"
-                    // onClick={logout} 
+                    onClick={handleLogout} 
                 >
                     Logout
                 </Button>

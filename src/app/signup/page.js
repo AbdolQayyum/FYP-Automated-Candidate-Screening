@@ -55,7 +55,7 @@ export default function Signup() {
 
   return (
     <main className="bg-gray-200 min-h-screen flex items-center justify-center p-10 mt-10">
-      <div className="box3-animate grid w-4/5 md:w-[60%] h-auto grid-cols-1 md:grid-cols-2 bg-gray-900 rounded-full">
+      <div className="box3-animate grid w-4/5 md:w-[60%] h-auto grid-cols-1 md:grid-cols-2 bg-[#162F65] rounded-full">
         {/* Signup Form */}
         <div className="bg-gray-100 text-gray-900 flex flex-col justify-center p-8">
           <div>
@@ -98,13 +98,13 @@ export default function Signup() {
             />
 
             {/* Signup Button */}
-            <Button type="submit" className="custom-button w-full p-2 rounded-xl border border-black bg-gray-900 text-gray-100 hover:bg-gray-700" disabled={buttonDisabled}>
+            <Button type="submit" className="custom-button w-full p-2 rounded-xl border border-black bg-[#162F65] text-gray-100 hover:bg-gray-700" disabled={buttonDisabled}>
               {buttonDisabled ? "SignUp" : "SignUp"}
             </Button>
             <p className="text-xs mt-4 mb-2 text-center">Already have an account? <Link href="/login" className="text-blue-600">Login</Link></p>
 
             {/* Signup with Google Button */}
-            <Button className="flex items-center w-full gap-2 p-2 bg-gray-900 text-gray-100 rounded-xl border border-black hover:bg-gray-700" variant="outline">
+            <Button className="flex items-center w-full gap-2 p-2 bg-[#162F65] text-gray-100 rounded-xl border border-black hover:bg-gray-700" variant="outline">
               <FcGoogle />
               Sign Up with Google
             </Button>

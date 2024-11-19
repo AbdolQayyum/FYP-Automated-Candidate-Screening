@@ -1,40 +1,34 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from "next/navigation"; 
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "next/navigation";
+import { FiUpload } from "react-icons/fi";
+import { Button } from "@/components/ui/button";
 
 const ApplyJobs = () => {
-  const router = useRouter();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [resume, setResume] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { id: jobId } = useParams(); 
+  const { id: jobId } = useParams();
+  const fileInputRef = useRef(null);
 
+  // Fetch job details
   useEffect(() => {
     if (!jobId) return;
 
     const fetchJobDetails = async () => {
       try {
-        const response = await fetch(`/api/hr/jobs?id=${jobId}`); 
+        const response = await fetch(`/api/hr/jobs?id=${jobId}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch job with ID: ${jobId}`);
         }
 
         const result = await response.json();
         if (result.success) {
-          const job = result.data;
-          setJob({
-            title: job.title || "",
-            location: job.location || "",
-            salaryRange: {
-              min: job.salaryRange?.min || "",
-              max: job.salaryRange?.max || ""
-            },
-            description: job.description || "",
-            requirements: job.requirements || [],
-            responsibilities: job.responsibilities || [],
-            type: job.type || "",
-          });
+          setJob(result.data);
         } else {
           setError(result.message || "Failed to load job details.");
         }
@@ -46,70 +40,140 @@ const ApplyJobs = () => {
     };
 
     fetchJobDetails();
-  }, [jobId]); 
-  
+  }, [jobId]);
+
+  const handleFileChange = (e) => {
+    setResume(e.target.files[0]);
+    setUploadProgress(0); // Reset progress when a new file is selected
+  };
+
+  const handleUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!resume) {
+      alert("Please select a resume to upload.");
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("resume", resume);
+    formData.append("jobTitle", job?.title);
+
+    try {
+      const response = await fetch(`/api/users/applyjobs/${jobId}`, {
+        method: "POST",
+        body: formData,
+        credentials: "include", // Ensure cookies are sent with the request
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to upload resume.");
+      }
+
+      const result = await response.json();
+      alert(result.message || "Resume uploaded successfully.");
+    } catch (err) {
+      console.error("Error uploading resume:", err);
+      alert(err.message || "Failed to upload resume.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   if (loading) {
-    console.log("Loading job details...");
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-[#457B9D]"></div>
       </div>
     );
   }
 
   if (error) {
-    console.error("Error occurred:", error);
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-red-500">{error}</p>
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <p className="text-red-600 font-bold">{error}</p>
       </div>
     );
   }
 
   if (!job) {
-    console.warn("No job found for the given ID");
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p>No job found.</p>
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <p className="text-gray-500 font-semibold">No job found for the given ID.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex justify-center">
-      <div className="p-6 max-w-lg bg-white rounded-lg shadow-md">
-        <h1 className="font-bold text-3xl text-center mb-4 text-gray-800">{job.title}</h1>
-        <p className="mb-2"><strong>Location:</strong> {job.location}</p>
-        <p className="mb-2"><strong>Type:</strong> {job.type}</p>
-        <p className="mb-4"><strong>Salary:</strong> {job.salaryRange.min} - {job.salaryRange.max}</p>
-        <div className="mb-4">
-          <h2 className="font-bold text-xl mb-2">Description</h2>
-          <p>{job.description}</p>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 p-4">
+      {/* Job Title */}
+      <h1 className="text-3xl font-bold text-[#1D3557]">{job.title}</h1>
+
+      {/* Job Details */}
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-4 space-y-4 overflow-y-auto">
+        <p><strong className="text-[#457B9D]">Location:</strong> {job.location}</p>
+        <p><strong className="text-[#457B9D]">Type:</strong> {job.type}</p>
+        <p><strong className="text-[#457B9D]">Salary:</strong> ${job.salaryRange.min} - ${job.salaryRange.max}</p>
+        <div>
+          <h2 className="text-lg font-semibold text-[#1D3557] mb-1">Description</h2>
+          <p className="text-sm text-gray-700 leading-tight">{job.description}</p>
         </div>
-        <div className="mb-4">
-          <h2 className="font-bold text-xl mb-2">Requirements</h2>
-          <ul className="list-disc list-inside">
-            {job.requirements.map((requirement, index) => (
-              <li key={index}>{requirement}</li>
+        <div>
+          <h2 className="text-lg font-semibold text-[#1D3557] mb-1">Requirements</h2>
+          <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+            {job.requirements.map((req, index) => (
+              <li key={index}>{req}</li>
             ))}
           </ul>
         </div>
-        <div className="mb-4">
-          <h2 className="font-bold text-xl mb-2">Responsibilities</h2>
-          <ul className="list-disc list-inside">
-            {job.responsibilities.map((responsibility, index) => (
-              <li key={index}>{responsibility}</li>
+        <div>
+          <h2 className="text-lg font-semibold text-[#1D3557] mb-1">Responsibilities</h2>
+          <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+            {job.responsibilities.map((resp, index) => (
+              <li key={index}>{resp}</li>
             ))}
           </ul>
         </div>
-        <form className="mt-6 text-center">
-          <input type="file" className="border p-2 mb-4 w-full" accept=".pdf, .doc, .docx" required />
-          <button type="submit" className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-            Upload Resume
-          </button>
-        </form>
+      </div>
+
+      {/* Upload Section */}
+      <div className="mt-4 text-center">
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept=".pdf, .doc, .docx"
+          onChange={handleFileChange}
+        />
+        <Button
+          onClick={handleUpload}
+          className="inline-flex items-center px-4 py-2 bg-[#E8AF30] text-black rounded-xl border hover:bg-[#EFF0F2]"
+          disabled={isUploading}
+        >
+          <FiUpload size={18} />
+          <span className="ml-2">Upload Resume</span>
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          className="mt-2 bg-[#E8AF30] text-black rounded-xl border hover:bg-[#EFF0F2]"
+          disabled={isUploading}
+        >
+          {isUploading ? `Uploading... ${Math.round(uploadProgress)}%` : "Submit Resume"}
+        </Button>
+        {isUploading && (
+          <div className="w-full max-w-md bg-gray-300 rounded-full h-2.5 mt-4">
+            <div
+              className="bg-[#457B9D] h-2.5 rounded-full"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+        )}
       </div>
     </div>
   );

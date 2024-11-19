@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.693.0",
+    "@aws-sdk/lib-storage": "^3.693.0",
+    "@aws-sdk/s3-presigned-post": "^3.693.0",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-brands-svg-icons": "^6.6.0",
     "@fortawesome/free-regular-svg-icons": "^6.5.2",
@@ -18,10 +21,13 @@
     "@radix-ui/react-hover-card": "^1.0.7",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "dotenv": "^16.4.5",
+    "formidable": "^3.5.2",
     "framer-motion": "^11.10.0",
     "input-otp": "^1.2.4",
     "jsonwebtoken": "^9.0.2",
