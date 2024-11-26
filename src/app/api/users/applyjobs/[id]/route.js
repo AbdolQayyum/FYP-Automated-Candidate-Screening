@@ -26,7 +26,6 @@ export async function POST(req) {
 
     let decoded;
     try {
-      // Use token.value as the argument for jwt.verify
       decoded = jwt.verify(token.value, process.env.TOKEN_SECRET);
     } catch (error) {
       console.error("Error verifying token:", error.message);
@@ -50,17 +49,37 @@ export async function POST(req) {
       );
     }
 
+    // File validation
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+
+    if (resumeFile.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: "File size exceeds the 10MB limit." },
+        { status: 400 }
+      );
+    }
+
+    if (!allowedTypes.includes(resumeFile.type)) {
+      return NextResponse.json(
+        { error: "Invalid file type. Only PDF, DOC, and DOCX are allowed." },
+        { status: 400 }
+      );
+    }
+
     const fileBuffer = Buffer.from(await resumeFile.arrayBuffer());
     const fileName = `${jobTitle}/${Date.now()}_${resumeFile.name}`;
     const bucketName = process.env.AWS_BUCKET_NAME;
 
-    // Upload file to S3
+    // Upload file to S3 with public-read permissions
+    console.log("Uploading file to S3...");
     await s3Client.send(
       new PutObjectCommand({
         Bucket: bucketName,
         Key: fileName,
         Body: fileBuffer,
         ContentType: resumeFile.type,
+        // ACL: "public-read",
       })
     );
 
@@ -72,8 +91,8 @@ export async function POST(req) {
       fileName,
       s3Url,
       uploadedAt: new Date(),
-      candidateName, // Save candidateName from JWT
-      email, // Save email from JWT
+      candidateName,
+      email,
     });
 
     await resume.save();
