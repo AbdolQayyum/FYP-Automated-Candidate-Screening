@@ -28,7 +28,7 @@ const jobSchema = new mongoose.Schema({
   },
   type: { 
     type: String, 
-    enum: ['Full Time', 'Part Time', 'Contract', 'Freelance', 'Internship'], 
+    enum: ['Full Time', 'Part Time','Remote','Contract', 'Freelance', 'Internship'], 
     default: 'Full Time' 
   },
   description: { 
@@ -44,12 +44,7 @@ const jobSchema = new mongoose.Schema({
     type: [String], 
     default: [] 
   },
-  // Uncomment the following if you are ready to use it
-  // postedBy: { 
-  //   type: mongoose.Schema.Types.ObjectId, 
-  //   ref: 'User', 
-  //   required: true 
-  // }
+  
 });
 
 // Follow the same export pattern

@@ -37,8 +37,15 @@ const HRDashboard = () => {
   }, []);
 
   // Redirect to resumes page for the selected job
-  const handleViewResumes = (jobTitle) => {
-    router.push(`/HR/resumes?jobTitle=${encodeURIComponent(jobTitle)}`);
+  const handleViewResumes = (jobTitle, jobDescription) => {
+    router.push(`/HR/resumes?jobTitle=${encodeURIComponent(jobTitle)}&jobDescription=${encodeURIComponent(jobDescription)}`);
+  };
+  // State to manage description expansion
+  const [expandedJobId, setExpandedJobId] = useState(null);
+
+  // Function to toggle description expansion
+  const toggleDescription = (jobId) => {
+    setExpandedJobId(expandedJobId === jobId ? null : jobId);
   };
 
   if (loading) {
@@ -78,10 +85,21 @@ const HRDashboard = () => {
                 <h3 className="font-bold text-lg text-[#E8AF30]">
                   {job.title || "Untitled Role"}
                 </h3>
-                <p className="text-sm text-gray-600 mt-2">
+                <div className="text-sm text-gray-600 mt-2">
                   <span className="font-bold text-[#162F65]">Description:</span>{" "}
-                  {job.description || "No description available."}
-                </p>
+                  {expandedJobId === job._id
+                    ? job.description || "No description available."
+                    : (job.description || "No description available.").slice(0, 100) + "..."}
+                </div>
+                {job.description && job.description.length > 100 && (
+                  <button
+                    onClick={() => toggleDescription(job._id)}
+                    className="text-[#E8AF30] mt-2 underline"
+                  >
+                    {expandedJobId === job._id ? "Read Less" : "Read More"}
+                  </button>
+                )}
+
                 <div className="mt-4">
                   <p className="text-sm text-gray-600 mb-2">
                     <span className="font-bold text-[#162F65]">Location:</span>{" "}
@@ -99,7 +117,7 @@ const HRDashboard = () => {
 
                 <Button
                   className="bg-[#F5D547] rounded-xl hover:bg-[#E8AF30] text-[#162F65] px-8 py-2 mt-4"
-                  onClick={() => handleViewResumes(job.title)}
+                  onClick={() => handleViewResumes(job.title, job.description)}
                 >
                   Uploaded Resumes
                 </Button>

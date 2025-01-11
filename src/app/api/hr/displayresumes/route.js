@@ -10,7 +10,7 @@ export async function GET(req) {
     const jobTitle = url.searchParams.get("jobTitle"); // Extract jobTitle from query params
 
     const query = jobTitle ? { jobTitle } : {};
-    const resumes = await Resume.find(query).select("candidateName email s3Url jobTitle uploadedAt");
+    const resumes = await Resume.find(query).select("candidateId candidateName email s3Url jobTitle uploadedAt");
 
     if (!resumes.length) {
       return NextResponse.json(

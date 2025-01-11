@@ -63,6 +63,7 @@ export default function HRNavbar() {
                     <NavItem path="/HR/addjobs" label="Post Jobs" />
                     <NavItem path="/aboutus" label="About Us" />
                     <NavItem path="/HR/displayresumes" label="Uploads" />
+                    <NavItem path="/HR/display-feedbacks" label="Feedbacks" />
                 </ul>
             </nav>
 

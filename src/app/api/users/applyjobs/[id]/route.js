@@ -1,5 +1,8 @@
 import { connect } from "@/dbConnection/dbConnection";
 import Resume from "@/models/resumeModel";
+import Job from "@/models/jobspostingModel"
+import User from "@/models/userModel"
+
 import jwt from "jsonwebtoken";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
@@ -14,14 +17,28 @@ const s3Client = new S3Client({
   },
 });
 
+// Utility for error responses
+function createErrorResponse(message, status) {
+  return NextResponse.json({ error: message }, { status });
+}
+
+// Retry mechanism for S3 upload
+async function uploadToS3(params, retries = 3) {
+  try {
+    await s3Client.send(new PutObjectCommand(params));
+  } catch (error) {
+    if (retries === 0) throw error;
+    console.warn(`Retrying S3 upload... (${3 - retries + 1}/3)`);
+    await uploadToS3(params, retries - 1);
+  }
+}
+
 export async function POST(req) {
   try {
-    const token = req.cookies.get("token"); // Extract token from cookies
+    // JWT validation
+    const token = req.cookies.get("token");
     if (!token || !token.value) {
-      return NextResponse.json(
-        { error: "Unauthorized: Token is missing." },
-        { status: 401 }
-      );
+      return createErrorResponse("Unauthorized: Token is missing.", 401);
     }
 
     let decoded;
@@ -29,73 +46,94 @@ export async function POST(req) {
       decoded = jwt.verify(token.value, process.env.TOKEN_SECRET);
     } catch (error) {
       console.error("Error verifying token:", error.message);
-      return NextResponse.json(
-        { error: "Unauthorized: Invalid or expired token." },
-        { status: 401 }
-      );
+      return createErrorResponse("Unauthorized: Invalid or expired token.", 401);
     }
 
-    const { candidateName, email } = decoded; // Extract candidate details from token
-    console.log("Decoded token:", decoded);
+    const {id : candidateId, candidateName, email} = decoded;
+    console.log("Decoded JWT payload:", decoded);
 
+    // Extract form data
     const formData = await req.formData();
     const resumeFile = formData.get("resume");
+    const jobId = formData.get("jobId");
     const jobTitle = formData.get("jobTitle");
+  
 
-    if (!resumeFile || !jobTitle) {
-      return NextResponse.json(
-        { error: "Missing required fields: resume or jobTitle" },
-        { status: 400 }
-      );
+    if (!resumeFile || !jobId || !jobTitle) {
+      return createErrorResponse("Missing required fields: resume, jobId, or jobTitle or candidateId", 400);
+    }
+
+    // Log received data
+    console.log("Received data:", { jobId, jobTitle, candidateName, email, candidateId });
+
+    // Validate jobId format
+    const jobIdRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!jobIdRegex.test(jobId)) {
+      console.error("Invalid jobId format:", jobId);
+      return createErrorResponse("Invalid jobId format.", 400);
     }
 
     // File validation
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
 
     if (resumeFile.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: "File size exceeds the 10MB limit." },
-        { status: 400 }
-      );
+      return createErrorResponse("File size exceeds the 10MB limit.", 400);
     }
 
     if (!allowedTypes.includes(resumeFile.type)) {
-      return NextResponse.json(
-        { error: "Invalid file type. Only PDF, DOC, and DOCX are allowed." },
-        { status: 400 }
-      );
+      return createErrorResponse("Invalid file type. Only PDF, DOC, and DOCX are allowed.", 400);
     }
 
+    // S3 upload
     const fileBuffer = Buffer.from(await resumeFile.arrayBuffer());
-    const fileName = `${jobTitle}/${Date.now()}_${resumeFile.name}`;
+    const fileName = `${jobId}/${jobTitle}/${Date.now()}_${resumeFile.name}`;
     const bucketName = process.env.AWS_BUCKET_NAME;
 
-    // Upload file to S3 with public-read permissions
     console.log("Uploading file to S3...");
-    await s3Client.send(
-      new PutObjectCommand({
-        Bucket: bucketName,
-        Key: fileName,
-        Body: fileBuffer,
-        ContentType: resumeFile.type,
-        // ACL: "public-read",
-      })
-    );
+    await uploadToS3({
+      Bucket: bucketName,
+      Key: fileName,
+      Body: fileBuffer,
+      ContentType: resumeFile.type,
+    });
 
     const s3Url = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
 
-    // Save resume metadata to MongoDB
+    // Log MongoDB data
+    console.log("Data to be saved to MongoDB:", {
+      jobId,
+      jobTitle,
+      fileName,
+      s3Url,
+      candidateName,
+      email,
+      candidateId,
+    });
+
+    // Save to MongoDB
     const resume = new Resume({
+      jobId,
       jobTitle,
       fileName,
       s3Url,
       uploadedAt: new Date(),
       candidateName,
       email,
+      candidateId
     });
 
-    await resume.save();
+    try {
+      await resume.save();
+      console.log("Resume saved successfully to MongoDB.");
+    } catch (err) {
+      console.error("Error saving resume to MongoDB:", err);
+      return createErrorResponse("Error saving resume to database.", 500);
+    }
 
     return NextResponse.json({
       message: "Resume uploaded successfully",
@@ -103,9 +141,6 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error("Error in upload process:", error.message);
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+    return createErrorResponse("Internal server error.", 500);
   }
 }

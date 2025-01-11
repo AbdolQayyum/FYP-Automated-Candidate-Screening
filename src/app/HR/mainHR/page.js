@@ -63,12 +63,15 @@ export default function Addjobs() {
     router.push(`/HR/addjobs/${id}`);
   };
 
-  // Pagination Logic
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = jobs.slice(indexOfFirstJob, indexOfLastJob);
+ // Pagination Logic
+const indexOfLastJob = currentPage * jobsPerPage;
+const indexOfFirstJob = indexOfLastJob - jobsPerPage;
 
-  const totalPages = Math.ceil(jobs.length / jobsPerPage);
+// Check if jobs is an array and not empty, then slice
+const currentJobs = Array.isArray(jobs) ? jobs.slice(indexOfFirstJob, indexOfLastJob) : [];
+
+const totalPages = Math.ceil(jobs.length / jobsPerPage);
+
 
   return (
     <main className="flex flex-col items-center justify-center w-full min-h-screen bg-[#E9ECEF] mt-14 p-14">
